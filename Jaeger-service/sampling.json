@@ -1,0 +1,14 @@
+{
+    "default_strategy": {
+      "type": "probabilistic",
+      "param": 1
+    },
+    "per_operation_strategies": {
+      "my-service": {
+        "default_strategy": {
+          "type": "probabilistic",
+          "param": 1
+        }
+      }
+    }
+  }

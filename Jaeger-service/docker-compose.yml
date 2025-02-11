@@ -1,0 +1,46 @@
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:1.56
+    container_name: jaeger
+    restart: always
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - ES_SERVER_URLS=http://elasticsearch:9200
+      - ES_TLS_ENABLED=false
+      - ES_INDEX_PREFIX=jaeger
+      - SPAN_STORAGE_TYPE=elasticsearch
+      - SAMPLING_STRATEGIES_FILE=/etc/jaeger/sampling.json
+    ports:
+      - "16686:16686"   # Jaeger UI
+      - "14268:14268"   # Jaeger Collector HTTP
+      - "14250:14250"   # Jaeger Collector gRPC
+    volumes:
+      - ./sampling.json:/etc/jaeger/sampling.json:ro
+
+  elasticsearch:
+    image: elasticsearch:8.4.3
+    container_name: elasticsearch
+    environment:
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "discovery.type=single-node"
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+
+  kibana:
+    image: kibana:8.4.3
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
+    depends_on:
+      - elasticsearch
+
+volumes:
+  esdata:
+    driver: local
